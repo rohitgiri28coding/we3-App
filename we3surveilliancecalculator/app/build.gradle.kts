@@ -62,5 +62,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
-
+    implementation (libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.room.ktx) // Required for coroutines support
 }

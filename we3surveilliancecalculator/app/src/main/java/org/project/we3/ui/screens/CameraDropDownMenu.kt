@@ -59,7 +59,7 @@ fun CameraDropdownMenu(cameraList: List<Camera?>?, onCameraSelected: (Camera?) -
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            if (cameraList == null){
+            if (cameraList.isNullOrEmpty()){
                 DropdownMenuItem(
                     onClick = {},
                     text = { Text("No Camera Found") }
