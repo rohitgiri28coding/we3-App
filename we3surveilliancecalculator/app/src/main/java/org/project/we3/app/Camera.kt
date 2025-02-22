@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "camera_table")
 data class Camera(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val firestoreId: String = "",  // Firestore Document ID
     val name: String,
     val unitPrice: Double,
     val detail: String,
@@ -15,6 +16,6 @@ data class Camera(
     val quantity: Int
 ){
     // Firestore requires an empty constructor
-    constructor() : this(0, "", 0.0, "", 0.0, 0.0, 0)
+    constructor() : this(0, "", "", 0.0, "", 0.0, 0.0, 0)
 }
 

@@ -1,7 +1,8 @@
-package org.project.we3.app
+package org.project.we3.app.db
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import org.project.we3.app.Camera
 
 @Dao
 interface CameraDao {

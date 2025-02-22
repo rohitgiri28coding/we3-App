@@ -5,40 +5,39 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.shopping.we3surveillancecalculator.ui.theme.AppTheme
-import org.project.we3.ui.screens.MainScreen
+import org.project.we3.ui.screens.TopAndBottomAppBar
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: CameraViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
-
-        viewModel.fetchFromFirestore()  // Fetch and save Firestore data in Room
 
         setContent {
             AppTheme {
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.fillMaxSize()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFA9F369), Color(0xFF056C55))
+                            )
+                        )
                 ) {
-                    val cameraList by viewModel.cameras.collectAsState(initial = emptyList())
+                    TopAndBottomAppBar()
 
-                    MainScreen(cameraList = cameraList)
                 }
             }
         }
     }
 }
-
