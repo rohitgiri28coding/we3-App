@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.project.we3.app.Camera
+import org.project.we3.app.db.CameraViewModel
 import org.project.we3.app.navigation.Router
 import org.project.we3.app.navigation.Screen
 import org.project.we3.app.navigation.SystemBackButtonHandler
@@ -44,6 +45,7 @@ import org.project.we3.app.navigation.SystemBackButtonHandler
 fun CameraDetailsScreen(
     camera: Camera,
     innerPaddingValues: PaddingValues,
+    cameraViewModel: CameraViewModel,
     cameraDetailsViewModel: CameraDetailsViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -108,7 +110,7 @@ fun CameraDetailsScreen(
                     onClick = {
                         showDialog = false
                         cameraDetailsViewModel.isLoading = true
-                        cameraDetailsViewModel.deleteCamera(camera, context)
+                        cameraDetailsViewModel.deleteCamera(camera, context, cameraViewModel)
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red)
                 ) {

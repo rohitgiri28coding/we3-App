@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.shopping.we3surveillancecalculator.ui.theme.AppTheme
-import org.project.we3.ui.screens.TopAndBottomAppBar
+import dagger.hilt.android.AndroidEntryPoint
+import org.project.we3.app.navigation.AppEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -34,8 +36,7 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                 ) {
-                    TopAndBottomAppBar()
-
+                    AppEntryPoint()
                 }
             }
         }

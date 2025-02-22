@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.project.we3.app.Camera
 
 @Composable
-fun ViewAllCameraScreen(innerPaddingValues: PaddingValues, viewAllCameraViewModel: ViewAllCameraViewModel = viewModel()) {
+fun ViewAllCameraScreen(cameraList: List<Camera>, innerPaddingValues: PaddingValues, viewAllCameraViewModel: ViewAllCameraViewModel = viewModel ()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -52,7 +52,7 @@ fun ViewAllCameraScreen(innerPaddingValues: PaddingValues, viewAllCameraViewMode
                                 viewAllCameraViewModel.navigateToAddCameraScreen()
                             }
                         }
-                        items(viewAllCameraViewModel.cameras) { camera ->
+                        items(cameraList) { camera ->
                             CameraItem(camera) {
                                 viewAllCameraViewModel.selectCameraAndNavigate(camera)
                             }

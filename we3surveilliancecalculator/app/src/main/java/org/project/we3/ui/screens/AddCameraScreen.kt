@@ -13,11 +13,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,11 +33,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.project.we3.app.db.CameraViewModel
 
 @Composable
-fun AddCameraScreen(innerPaddingValues: PaddingValues, addCameraViewModel: AddCameraViewModel = viewModel()) {
+fun AddCameraScreen(innerPaddingValues: PaddingValues, cameraViewModel: CameraViewModel, addCameraViewModel: AddCameraViewModel = viewModel()) {
     val context = LocalContext.current
 
     var cameraName by remember { mutableStateOf("") }
@@ -62,30 +64,20 @@ fun AddCameraScreen(innerPaddingValues: PaddingValues, addCameraViewModel: AddCa
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("Add New Camera", fontSize = 24.sp, color = Color.White, modifier = Modifier.align(Alignment.Start))
+            Text("Add New Camera", fontSize = 24.sp, color = Color.Black, modifier = Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(20.dp))
 
-            CameraStringInputField("Camera Name", cameraName) { cameraName = it }
+            cameraName = cameraEditSection("Camera Name", cameraName, KeyboardType.Text)
             Spacing()
-            CameraStringInputField("Camera Details", cameraDetails) { cameraDetails = it }
+            cameraDetails = cameraEditSection("Camera Details", cameraDetails, KeyboardType.Text)
             Spacing()
-            CameraStringInputField("MRP", mrp, KeyboardType.Number) { mrp = it }
+            mrp = cameraEditSection("MRP", mrp)
             Spacing()
-            CameraStringInputField(
-                "Unit Price (Without GST)",
-                unitPrice,
-                KeyboardType.Number
-            ) {
-                unitPrice = it
-            }
+            unitPrice = cameraEditSection("Unit Price (Without GST)", unitPrice)
             Spacing()
-            CameraStringInputField("GST Rate (%)", gstRate, KeyboardType.Number) { gstRate = it }
+            gstRate = cameraEditSection("GST Rate (%)", gstRate)
             Spacing()
-            CameraStringInputField("Quantity (Stock)", quantity, KeyboardType.Number) {
-                if(it.isDigitsOnly()) {
-                    quantity = it
-                }
-            }
+            quantity = cameraEditSection("Quantity (Stock)", quantity)
 
             Spacer(modifier = Modifier.height(30.dp))
             if (addCameraViewModel.isLoading) {
@@ -95,6 +87,7 @@ fun AddCameraScreen(innerPaddingValues: PaddingValues, addCameraViewModel: AddCa
                     onClick = {
                         addCameraViewModel.checkDataAndUpload(
                             context,
+                            cameraViewModel,
                             cameraName,
                             cameraDetails,
                             mrp,
@@ -119,40 +112,37 @@ fun AddCameraScreen(innerPaddingValues: PaddingValues, addCameraViewModel: AddCa
 
 @Composable
 private fun Spacing() {
-    Spacer(modifier = Modifier.height(10.dp))
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+
+@Composable
+private fun editSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
+    var v1 by remember {  mutableStateOf(value)}
+    TextField(
+        value = v1,
+        onValueChange = { v1 = it },
+        label = { Text(textValue, color = Color.Black) },
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        modifier = Modifier.fillMaxWidth(),
+        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedTextColor = Color.Black, unfocusedTextColor = Color.Black)
+    )
+    return v1
 }
 
 @Composable
-fun CameraStringInputField(
-    label: String,
-    value: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    onValueChange: (String) -> Unit
-){
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, color = Color.White) },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        modifier = Modifier.fillMaxWidth(0.8f),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.White,
-            unfocusedBorderColor = Color.White,
-            cursorColor = Color.White,
-            unfocusedLabelColor = Color.White,
-            focusedLabelColor = Color.White,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            disabledLabelColor = Color.White,
-            disabledTextColor = Color.White,
-            disabledBorderColor = Color.White,
-            disabledPlaceholderColor = Color.White,
-            disabledPrefixColor = Color.White,
-            disabledContainerColor = Color.White
-        ),
-        singleLine = true
-    )
-    Spacer(modifier = Modifier.height(10.dp))
+private fun cameraEditSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
+    var v1 by remember {  mutableStateOf(value)}
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        )
+    ) {
+        v1 = editSection(textValue, v1, keyboardType)
+    }
+    return v1
 }
-
 

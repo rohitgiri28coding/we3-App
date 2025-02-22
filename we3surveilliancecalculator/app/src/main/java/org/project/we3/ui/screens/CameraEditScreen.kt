@@ -29,14 +29,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.project.we3.app.Camera
+import org.project.we3.app.db.CameraViewModel
 import org.project.we3.app.navigation.Router
 import org.project.we3.app.navigation.Screen
 import org.project.we3.app.navigation.SystemBackButtonHandler
 
 @Composable
-fun CameraEditScreen(camera: Camera, innerPaddingValues: PaddingValues, editCameraViewModel: EditCameraViewModel = viewModel()) {
+fun CameraEditScreen(camera: Camera, innerPaddingValues: PaddingValues, cameraViewModel: CameraViewModel, editCameraViewModel: EditCameraViewModel = hiltViewModel()) {
 
     var name by remember { mutableStateOf(camera.name) }
     var details by remember { mutableStateOf(camera.detail) }
@@ -87,6 +88,7 @@ fun CameraEditScreen(camera: Camera, innerPaddingValues: PaddingValues, editCame
                         editCameraViewModel.isLoading = true
                         editCameraViewModel.checkDataAndUpdate(
                             context = context,
+                            cameraViewModel = cameraViewModel,
                             id = camera.firestoreId, // Preserve the original ID
                             cameraName = name,
                             unitPrice = unitPrice,

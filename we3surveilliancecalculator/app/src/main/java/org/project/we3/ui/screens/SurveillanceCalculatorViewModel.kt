@@ -9,9 +9,10 @@ import androidx.lifecycle.ViewModel
 import org.project.we3.app.Camera
 import org.project.we3.app.createQuotationPDF
 
-class SurveillanceCalculatorViewModel : ViewModel() {
+class SurveillanceCalculatorViewModel: ViewModel() {
     var selectedCamera = mutableStateOf<Camera?>(null)
     var quantity = mutableStateOf("")
+
 
     fun selectCamera(camera: Camera) {
         selectedCamera.value = camera
@@ -33,11 +34,15 @@ class SurveillanceCalculatorViewModel : ViewModel() {
             qty == null || qty <= 0 -> {
                 Toast.makeText(context, "Enter a valid quantity", Toast.LENGTH_SHORT).show()
             }
-            qty > selectedCam.quantity -> {
-                Toast.makeText(context, "Only ${selectedCam.quantity} cameras available", Toast.LENGTH_SHORT).show()
-                quantity.value = selectedCam.quantity.toString()
-            }
             else -> {
+                if (qty > selectedCam.quantity) {
+                    Toast.makeText(
+                        context,
+                        "Only ${selectedCam.quantity} cameras available",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    quantity.value = selectedCam.quantity.toString()
+                }
                 val totalPrice = selectedCam.unitPrice * qty
                 Toast.makeText(context, "Quotation: ₹$totalPrice for $qty", Toast.LENGTH_LONG).show()
                 createQuotationPDF(context, listOf(selectedCam), qty)

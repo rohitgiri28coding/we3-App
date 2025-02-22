@@ -6,17 +6,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.FirebaseFirestore
-import org.project.we3.app.navigation.Router
-import org.project.we3.app.navigation.Screen
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import org.project.we3.app.Camera
+import org.project.we3.app.db.CameraViewModel
+import org.project.we3.app.repository.FirestoreDBRepository
+import javax.inject.Inject
 
-class AddCameraViewModel: ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
+@HiltViewModel
+class AddCameraViewModel @Inject constructor(private val firestoreDBRepository: FirestoreDBRepository): ViewModel() {
     var isLoading by mutableStateOf(false)
 
 
     private fun addCameraToFirestore(
         context: Context,
+        cameraViewModel: CameraViewModel,
         name: String,
         details: String,
         mrp: String,
@@ -24,27 +29,20 @@ class AddCameraViewModel: ViewModel() {
         gstRate: String,
         quantity: String
     ) {
-        val cameraData = hashMapOf(
-            "name" to name,
-            "details" to details,
-            "mrp" to mrp.toDoubleOrNull(),
-            "unitPrice" to unitPrice.toDoubleOrNull(),
-            "gst" to gstRate.toDoubleOrNull(),
-            "quantity" to quantity.toIntOrNull()
+        val cameraData = Camera(
+            name = name,
+            detail = details,
+            mrp = mrp.toDouble(),
+            unitPrice = unitPrice.toDouble(),
+            gst = gstRate.toDouble(),
+            quantity = quantity.toInt()
         )
-
-        db.collection("CameraList")
-            .add(cameraData)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Camera added successfully!", Toast.LENGTH_SHORT).show()
-                Router.navigateTo(Screen.ViewAllCameraScreen)
-            }
-            .addOnFailureListener {
-                Toast.makeText(context, "Error adding camera", Toast.LENGTH_SHORT).show()
-            }
+        viewModelScope.launch {
+            firestoreDBRepository.addCamera(cameraData, context, cameraViewModel)
+        }
     }
 
-    fun checkDataAndUpload(context: Context, cameraName: String, cameraDetails: String, mrp: String, unitPrice: String, gstRate: String, quantity: String) {
+    fun checkDataAndUpload(context: Context, cameraViewModel: CameraViewModel, cameraName: String, cameraDetails: String, mrp: String, unitPrice: String, gstRate: String, quantity: String) {
         isLoading = true
         if(cameraName.isEmpty() || cameraDetails.isEmpty() || mrp.isEmpty() || unitPrice.isEmpty() || gstRate.isEmpty() || quantity.isEmpty()) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -55,7 +53,7 @@ class AddCameraViewModel: ViewModel() {
                 isLoading = false
                 return
             }
-            addCameraToFirestore(context, cameraName, cameraDetails, mrp, unitPrice, gstRate, quantity)
+            addCameraToFirestore(context, cameraViewModel, cameraName, cameraDetails, mrp, unitPrice, gstRate, quantity)
         }
         isLoading = false
     }

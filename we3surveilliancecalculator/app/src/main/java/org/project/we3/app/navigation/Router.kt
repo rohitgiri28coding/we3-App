@@ -8,10 +8,11 @@ sealed class Screen {
     data class EditScreen(val camera: Camera) : Screen()
     data object AddNewCameraScreen : Screen()
     data class CameraDetailScreen(val camera: Camera) : Screen()
+    data object AdminLoginScreen : Screen()
     data object ViewAllCameraScreen : Screen()
     data object HomeScreen : Screen()
-
 }
+
 
 object Router {
     var currentScreen: MutableState<Screen> = mutableStateOf(Screen.HomeScreen)

@@ -67,7 +67,7 @@ fun TopAndBottomAppBar() {
                         }
 
                         IconButton(onClick = {
-                            Router.navigateTo(Screen.ViewAllCameraScreen)
+                            Router.navigateTo(Screen.AdminLoginScreen)
                         }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit")
                         }
