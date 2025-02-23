@@ -11,6 +11,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.project.we3.app.db.CameraDatabase
 import org.project.we3.app.db.CameraRepository
+import org.project.we3.app.repository.AdminAuth
+import org.project.we3.app.repository.AdminAuthImpl
 import org.project.we3.app.repository.FirestoreDBRepository
 import org.project.we3.app.repository.FirestoreDBRepositoryImpl
 import javax.inject.Singleton
@@ -40,4 +42,9 @@ object AppModule {
         return CameraRepository(CameraDatabase.getDatabase(app).cameraDao())
     }
 
+    @Provides
+    @Singleton
+    fun provideAdminAuth(firestore: FirebaseFirestore): AdminAuth{
+        return AdminAuthImpl(firestore)
+    }
 }

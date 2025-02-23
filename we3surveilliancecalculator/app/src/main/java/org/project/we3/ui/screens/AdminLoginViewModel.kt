@@ -1,21 +1,43 @@
 package org.project.we3.ui.screens
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import org.project.we3.app.AdminCredentials
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import org.project.we3.app.db.User
+import org.project.we3.app.repository.AdminAuth
+import org.project.we3.app.repository.AdminPreferences
 import javax.inject.Inject
 
 @HiltViewModel
-class AdminLoginViewModel @Inject constructor() : ViewModel() {
-    var isAdminLoggedIn: Boolean = false
+class AdminLoginViewModel @Inject constructor(
+    application: Application,
+    private val adminAuth: AdminAuth
+) : AndroidViewModel(application) {
 
-    fun login(email: String, password: String): Boolean {
+    private val adminPreferences = AdminPreferences(application)
 
-        if (email.trim() == AdminCredentials.ADMIN_EMAIL && password == AdminCredentials.ADMIN_PASSWORD) {
-            isAdminLoggedIn = true
-            return true
+    private val _isAdminLoggedIn = MutableStateFlow(false)
+    val isAdminLoggedIn: StateFlow<Boolean> = _isAdminLoggedIn.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _isAdminLoggedIn.value = adminPreferences.isAdminLoggedIn.first()
         }
-        return false
     }
 
+    fun loginAdmin(email: String, password: String) {
+        viewModelScope.launch {
+            val isAdmin = adminAuth.checkIsAdmin(User(email, password)) // Wait for Firestore result
+            if (isAdmin) {
+                _isAdminLoggedIn.value = true
+                adminPreferences.setAdminLoggedIn(true)
+            }
+        }
+    }
 }

@@ -27,8 +27,8 @@ import org.project.we3.app.navigation.AppScreenNavigation
 import org.project.we3.app.navigation.Router
 import org.project.we3.app.navigation.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAndBottomAppBar() {
     Scaffold(
@@ -67,7 +67,7 @@ fun TopAndBottomAppBar() {
                         }
 
                         IconButton(onClick = {
-                            Router.navigateTo(Screen.AdminLoginScreen)
+                            Router.navigateTo(Screen.ViewAllCameraScreen)
                         }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit")
                         }

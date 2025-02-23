@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.project.we3.app.db.CameraViewModel
 import org.project.we3.ui.screens.AddCameraScreen
 import org.project.we3.ui.screens.AdminLoginScreen
@@ -22,10 +22,11 @@ import org.project.we3.ui.screens.ViewAllCameraScreen
 @Composable
 fun AppScreenNavigation(
     innerPadding: PaddingValues,
-    loginViewModel: AdminLoginViewModel = viewModel(),
-    cameraViewModel: CameraViewModel = viewModel()
+    loginViewModel: AdminLoginViewModel = hiltViewModel(),
+    cameraViewModel: CameraViewModel = hiltViewModel()
 ) {
     val cameraList by cameraViewModel.cameras.collectAsState(initial = emptyList())
+    val isAdminLoggedIn by loginViewModel.isAdminLoggedIn.collectAsState(initial = false)
 
     Crossfade(targetState = Router.currentScreen, label = "") { currentState ->
         when (currentState.value) {
@@ -34,9 +35,9 @@ fun AppScreenNavigation(
                 CameraDetailsScreen(camera, innerPadding, cameraViewModel)
             }
             Screen.AddNewCameraScreen -> AddCameraScreen(innerPadding, cameraViewModel)
-            Screen.HomeScreen -> SurveillanceCalculatorScreen(cameraViewModel.cameras.collectAsState(initial = emptyList()).value, innerPadding)
+            Screen.HomeScreen -> SurveillanceCalculatorScreen(cameraViewModel.cameras.collectAsState(initial = emptyList()).value, innerPadding, cameraViewModel)
             Screen.ViewAllCameraScreen -> {
-                if (loginViewModel.isAdminLoggedIn) {
+                if (isAdminLoggedIn) {
                     ViewAllCameraScreen(cameraList, innerPadding)
                 } else {
                     Router.navigateTo(Screen.AdminLoginScreen) // Navigate to login if not admin

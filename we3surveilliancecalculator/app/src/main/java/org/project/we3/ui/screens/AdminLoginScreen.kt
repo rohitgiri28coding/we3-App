@@ -27,8 +27,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import org.project.we3.app.navigation.Router
-import org.project.we3.app.navigation.Screen
 
 @Composable
 fun AdminLoginScreen(onLoginSuccess: () -> Unit, adminLoginViewModel: AdminLoginViewModel = hiltViewModel()) {
@@ -36,9 +34,7 @@ fun AdminLoginScreen(onLoginSuccess: () -> Unit, adminLoginViewModel: AdminLogin
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    if (adminLoginViewModel.isAdminLoggedIn) {
-        Router.navigateTo(Screen.ViewAllCameraScreen)
-    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +62,8 @@ fun AdminLoginScreen(onLoginSuccess: () -> Unit, adminLoginViewModel: AdminLogin
 
         Button(
             onClick = {
-                if (!adminLoginViewModel.login(email, password)){
+                adminLoginViewModel.loginAdmin(email, password)
+                if (!adminLoginViewModel.isAdminLoggedIn.value){
                     errorMessage = "Invalid email or password"
                 }else{
                     onLoginSuccess()

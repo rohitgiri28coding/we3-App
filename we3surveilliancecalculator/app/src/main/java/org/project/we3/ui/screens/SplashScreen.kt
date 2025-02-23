@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,7 +56,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 painter = painterResource(id = R.drawable.app_logo), // Replace with your logo
                 contentDescription = "App Logo",
                 modifier = Modifier
-                    .size(200.dp) // Base size
+
                     .graphicsLayer(scaleX = animatedScale, scaleY = animatedScale) // Apply scaling animation
             )
 

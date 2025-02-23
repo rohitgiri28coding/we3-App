@@ -85,7 +85,7 @@ fun CameraImage(screenWidth: Dp) {
 }
 
 @Composable
-fun CameraDropdownMenu(cameraList: List<Camera?>?, onCameraSelected: (Camera?) -> Unit) {
+fun CameraDropdownMenu(cameraList: List<Camera>, onCameraSelected: (Camera?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedCamera by remember { mutableStateOf<Camera?>(null) }
 
@@ -130,10 +130,13 @@ fun CameraDropdownMenu(cameraList: List<Camera?>?, onCameraSelected: (Camera?) -
             containerColor = Color.White,
             onDismissRequest = { expanded = false }
         ) {
-            if (cameraList.isNullOrEmpty()|| cameraList.isEmpty()){
+            if (cameraList.isEmpty()){
+                Log.d("CameraDropdownMenu", "No Camera Found")
                 DropdownMenuItem(
-                    onClick = {},
-                    text = { Text("No Camera Found", color = Color.White) }
+                    onClick = {
+
+                    },
+                    text = { Text("No Camera Found.", color = Color.Black) }
                 )
             }else {
                 cameraList.forEachIndexed { index, camera ->
@@ -143,7 +146,7 @@ fun CameraDropdownMenu(cameraList: List<Camera?>?, onCameraSelected: (Camera?) -
                             onCameraSelected(camera)
                             expanded = false
                         },
-                        text = { Text(camera!!.name, color = Color.Black) }
+                        text = { Text(camera.name, color = Color.Black) }
                     )
                     if (index < cameraList.size - 1) {
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
