@@ -31,13 +31,15 @@ class AdminLoginViewModel @Inject constructor(
         }
     }
 
-    fun loginAdmin(email: String, password: String) {
+    fun loginAdmin(email: String, password: String, onLoginResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val isAdmin = adminAuth.checkIsAdmin(User(email, password)) // Wait for Firestore result
+            val isAdmin = adminAuth.checkIsAdmin(User(email, password))
             if (isAdmin) {
                 _isAdminLoggedIn.value = true
                 adminPreferences.setAdminLoggedIn(true)
             }
+            onLoginResult(isAdmin)
         }
     }
+
 }

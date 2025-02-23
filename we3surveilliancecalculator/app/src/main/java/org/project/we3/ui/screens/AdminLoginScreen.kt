@@ -62,11 +62,12 @@ fun AdminLoginScreen(onLoginSuccess: () -> Unit, adminLoginViewModel: AdminLogin
 
         Button(
             onClick = {
-                adminLoginViewModel.loginAdmin(email, password)
-                if (!adminLoginViewModel.isAdminLoggedIn.value){
-                    errorMessage = "Invalid email or password"
-                }else{
-                    onLoginSuccess()
+                adminLoginViewModel.loginAdmin(email, password) { isSuccess ->
+                    if (isSuccess) {
+                        onLoginSuccess()
+                    } else {
+                        errorMessage = "Invalid email or password"
+                    }
                 }
             }
         ) {

@@ -14,6 +14,7 @@ import org.project.we3.ui.screens.AdminLoginScreen
 import org.project.we3.ui.screens.AdminLoginViewModel
 import org.project.we3.ui.screens.CameraDetailsScreen
 import org.project.we3.ui.screens.CameraEditScreen
+import org.project.we3.ui.screens.ContactUsScreen
 import org.project.we3.ui.screens.SurveillanceCalculatorScreen
 import org.project.we3.ui.screens.ViewAllCameraScreen
 
@@ -52,6 +53,8 @@ fun AppScreenNavigation(
                     onLoginSuccess = {Router.navigateTo(Screen.ViewAllCameraScreen)}
                     )
             }
+
+            Screen.ContactScreen -> ContactUsScreen()
         }
     }
 }

@@ -33,7 +33,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
     // Animate scale from 0.5x to 1.2x and then settle at 1x
     val animatedScale by animateFloatAsState(
-        targetValue = if (scale == 0f) 1f else 4f,
+        targetValue = if (scale == 0f) 1f else 3f,
         animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
         label = "Splash Animation"
     )

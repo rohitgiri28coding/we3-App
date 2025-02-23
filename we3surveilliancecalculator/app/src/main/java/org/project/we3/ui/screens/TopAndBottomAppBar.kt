@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.BottomAppBar
@@ -70,6 +71,11 @@ fun TopAndBottomAppBar() {
                             Router.navigateTo(Screen.ViewAllCameraScreen)
                         }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit")
+                        }
+                        IconButton(onClick = {
+                            Router.navigateTo(Screen.ContactScreen)
+                        }) {
+                            Icon(Icons.Filled.Call, "Contact Us")
                         }
                     }
 

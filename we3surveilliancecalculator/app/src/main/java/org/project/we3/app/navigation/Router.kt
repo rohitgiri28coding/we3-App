@@ -11,6 +11,7 @@ sealed class Screen {
     data object AdminLoginScreen : Screen()
     data object ViewAllCameraScreen : Screen()
     data object HomeScreen : Screen()
+    data object ContactScreen: Screen()
 }
 
 
