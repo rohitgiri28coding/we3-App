@@ -6,12 +6,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -113,21 +123,44 @@ fun SurveillanceCalculatorScreen(
 
                     CameraDropdownMenu(
                         cameraList = cameraList,
+                        selectedCamera = surveillanceCalculatorViewModel.selectedCamera,
                         onCameraSelected = {
                             if (it != null) {
                                 surveillanceCalculatorViewModel.selectCamera(it)
                             }
                         }
                     )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    QuantityInputField(screenWidth, {
+                    Spacing()
+                    QuantityInputField(surveillanceCalculatorViewModel.quantity) {
                         surveillanceCalculatorViewModel.updateQuantity(it)
-                    }, {
-                        surveillanceCalculatorViewModel.validateAndGenerateQuotation(context)
-                    })
-
+                    }
+                    if (surveillanceCalculatorViewModel.quotation.camera.isNotEmpty()) {
+                        Column (modifier = Modifier.fillMaxWidth(1f)
+                            .heightIn(max = 120.dp)
+                            .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
+                            Spacing()
+                            surveillanceCalculatorViewModel.quotation.camera.forEachIndexed { index, camera ->
+                                QuotationComponent(
+                                    camera.name,
+                                    surveillanceCalculatorViewModel.quotation.quantity[index]
+                                ) {
+                                    surveillanceCalculatorViewModel.removeCamera(index)
+                                }
+                            }
+                            Spacing()
+                        }
+                    }
+                    OutlinedButton(onClick = {
+                        surveillanceCalculatorViewModel.addNewCameraButtonClicked(context)
+                    }, modifier = Modifier.fillMaxWidth(0.8f)) {
+                        Text("Add more cameras", fontSize = 18.sp)
+                    }
+                    Button(onClick = {
+                        surveillanceCalculatorViewModel.continueButtonClicked(context)
+                    }, modifier = Modifier.fillMaxWidth(0.8f)) {
+                        Text("Continue", fontSize = 18.sp)
+                    }
                     Spacer(modifier = Modifier.weight(1f))
                     Text("Protection You Can Trust.", color = Color.White, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(20.dp))
@@ -137,3 +170,18 @@ fun SurveillanceCalculatorScreen(
     }
 }
 
+@Composable
+fun QuotationComponent(name: String, quantity: Int, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 25.dp, end=25.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("$name... ($quantity)", color = Color.White, fontSize = 16.sp, modifier = Modifier.weight(1f))
+        IconButton(onClick = onRemove) {
+            Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red)
+        }
+    }
+}

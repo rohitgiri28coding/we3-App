@@ -11,13 +11,19 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import org.project.we3.app.db.Quotation
 import org.project.we3.ui.theme.AppTypography
 import java.io.IOException
 import java.text.NumberFormat
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.Q)
-fun createQuotationPDF(context: Context, cameraList: List<Camera>, quantity: Int) {
+fun createQuotationPDF(context: Context, quotation: Quotation) {
+
+    val cameraList: List<Camera> = quotation.camera
+    val quantityList: List<Int> = quotation.quantity
+    val quantity = quantityList[0]
+
     val pdfDocument = PdfDocument()
     val paint = Paint()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size

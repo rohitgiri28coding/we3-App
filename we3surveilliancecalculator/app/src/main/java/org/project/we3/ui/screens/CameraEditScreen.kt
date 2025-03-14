@@ -8,15 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,32 +110,3 @@ fun CameraEditScreen(camera: Camera, innerPaddingValues: PaddingValues, cameraVi
     }
 }
 
-@Composable
-private fun editSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
-    var v1 by remember {  mutableStateOf(value)}
-    TextField(
-        value = v1,
-        onValueChange = { v1 = it },
-        label = { Text(textValue, color = Color.Black) },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
-        modifier = Modifier.fillMaxWidth(),
-        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedTextColor = Color.Black, unfocusedTextColor = Color.Black)
-    )
-    return v1
-}
-
-@Composable
-private fun cameraEditSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
-    var v1 by remember {  mutableStateOf(value)}
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White,
-            contentColor = Color.Black
-        )
-    ) {
-        v1 = editSection(textValue, v1, keyboardType)
-    }
-    return v1
-}

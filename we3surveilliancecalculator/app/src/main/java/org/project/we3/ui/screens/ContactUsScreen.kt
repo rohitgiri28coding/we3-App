@@ -3,7 +3,6 @@ package org.project.we3.ui.screens
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 
 @Composable
 fun ContactUsScreen() {
@@ -47,13 +47,13 @@ fun ContactUsScreen() {
         ContactButton(
             icon = Icons.Default.Call,
             label = "Call Us",
-            onClick = { openDialer(context, "+91 9386673993") }
+            onClick = { openDialer(context, "+91 9576778992") }
         )
 
         ContactButton(
             icon = Icons.Default.Email,
             label = "Email Us",
-            onClick = { openEmail(context, "we3support@gmail.com") }
+            onClick = { openEmail(context, "ravikumar667352@gmail.com") }
         )
 
         ContactButton(
@@ -78,13 +78,13 @@ fun ContactButton(icon: ImageVector, label: String, onClick: () -> Unit) {
 }
 
 fun openDialer(context: Context, phoneNumber: String) {
-    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
+    val intent = Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri())
     context.startActivity(intent)
 }
 
 fun openEmail(context: Context, email: String) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
-        data = Uri.parse("mailto:$email")
+        data = "mailto:$email".toUri()
     }
     context.startActivity(intent)
 }
@@ -92,14 +92,14 @@ fun openEmail(context: Context, email: String) {
 
 fun openMaps(context: Context, latitude: String, longitude: String) {
     val location = "$latitude,$longitude"
-    val uri = Uri.parse("geo:$location?q=$location")
+    val uri = "geo:$location?q=$location".toUri()
     val intent = Intent(Intent.ACTION_VIEW, uri)
     intent.setPackage("com.google.android.apps.maps")
     try {
         context.startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         val mapUrl = "https://maps.google.com/?q=$location"
-        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(mapUrl))
+        val webIntent = Intent(Intent.ACTION_VIEW, mapUrl.toUri())
         context.startActivity(webIntent)
     }
 }

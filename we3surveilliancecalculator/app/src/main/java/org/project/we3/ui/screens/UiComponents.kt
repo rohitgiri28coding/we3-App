@@ -1,6 +1,8 @@
 package org.project.we3.ui.screens
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,11 +17,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +36,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,16 +51,75 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.project.we3.R
 import org.project.we3.app.Camera
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateRangePickerModal(
+    onDateRangeSelected: (Pair<Long?, Long?>) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val currentDate = LocalDate.now()
+    val thirtyDaysLater = currentDate.plus(30, ChronoUnit.DAYS)
+
+    val currentMillis = currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val thirtyDaysLaterMillis = thirtyDaysLater.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+    val dateRangePickerState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = currentMillis,
+        initialSelectedEndDateMillis = thirtyDaysLaterMillis
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDateRangeSelected(
+                        Pair(
+                            dateRangePickerState.selectedStartDateMillis,
+                            dateRangePickerState.selectedEndDateMillis
+                        )
+                    )
+                    onDismiss()
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DateRangePicker(
+            state = dateRangePickerState,
+            title = {
+                Text(
+                    text = "Select date range"
+                )
+            },
+            showModeToggle = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp)
+                .padding(16.dp)
+        )
+    }
+}
 @Composable
 fun CameraImage(screenWidth: Dp) {
 
@@ -85,9 +157,8 @@ fun CameraImage(screenWidth: Dp) {
 }
 
 @Composable
-fun CameraDropdownMenu(cameraList: List<Camera>, onCameraSelected: (Camera?) -> Unit) {
+fun CameraDropdownMenu(cameraList: List<Camera>, selectedCamera: Camera?, onCameraSelected: (Camera?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedCamera by remember { mutableStateOf<Camera?>(null) }
 
     Box(
         modifier = Modifier
@@ -142,7 +213,6 @@ fun CameraDropdownMenu(cameraList: List<Camera>, onCameraSelected: (Camera?) -> 
                 cameraList.forEachIndexed { index, camera ->
                     DropdownMenuItem(
                         onClick = {
-                            selectedCamera = camera
                             onCameraSelected(camera)
                             expanded = false
                         },
@@ -159,19 +229,98 @@ fun CameraDropdownMenu(cameraList: List<Camera>, onCameraSelected: (Camera?) -> 
 
 }
 
+@Composable
+fun CheckComponent(text: String, checked: Boolean, updateCheckValue: (Boolean) -> Unit){
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text
+        )
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { updateCheckValue(it) }
+        )
+    }
+}
 
 @Composable
-fun QuantityInputField(screenWidth: Dp, updateQuantity: (String) -> Unit, onClick: () -> Unit) {
-    var quantity by remember { mutableStateOf(TextFieldValue("")) }
+fun InputField(text: String, txtValue: String, keyboardType: KeyboardType= KeyboardType.Number, updateText: (String)-> Unit){
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedTextField(
+            value = txtValue,
+            onValueChange = {
+                updateText(it)
+            },
+            placeholder = { Text("Enter $text", color = Color.White) },
+            modifier = Modifier.fillMaxWidth(0.8f),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.White,
+                cursorColor = Color.White,
+                unfocusedLabelColor = Color.White,
+                focusedLabelColor = Color.White,
+                disabledLabelColor = Color.White,
+                disabledTextColor = Color.White,
+                disabledBorderColor = Color.White,
+                disabledPlaceholderColor = Color.White,
+                disabledPrefixColor = Color.White,
+                disabledContainerColor = Color.White
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+            textStyle = TextStyle(color = Color.White)
+        )
+        Spacing(15.dp)
+    }
+}
+@Composable
+fun Spacing(size: Dp = 20.dp){
+    Spacer(modifier = Modifier.size(size))
+}
+@Composable
+private fun editSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
+    var v1 by remember {  mutableStateOf(value)}
+    TextField(
+        value = v1,
+        onValueChange = { v1 = it },
+        label = { Text(textValue, color = Color.Black) },
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        modifier = Modifier.fillMaxWidth(),
+        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedTextColor = Color.Black, unfocusedTextColor = Color.Black)
+    )
+    return v1
+}
+
+@Composable
+fun cameraEditSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
+    var v1 by remember { mutableStateOf(value)}
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        )
+    ) {
+        v1 = editSection(textValue, v1, keyboardType)
+    }
+    return v1
+}
+@Composable
+fun QuantityInputField(quantity: String, updateQuantity: (String) -> Unit) {
     Column (
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         OutlinedTextField(
             value = quantity,
-            onValueChange = {}, // Disabled manual input, handled via numpad
+            onValueChange = {
+                updateQuantity(it)
+            },
             placeholder = { Text("Enter Quantity", color=Color.White) },
             modifier = Modifier.fillMaxWidth(0.8f),
-            readOnly = true, // Prevents manual typing
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.White,
@@ -185,27 +334,12 @@ fun QuantityInputField(screenWidth: Dp, updateQuantity: (String) -> Unit, onClic
                 disabledPrefixColor = Color.White,
                 disabledContainerColor = Color.White
                 ),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             textStyle = TextStyle(color = Color.White)
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        NumberPad(screenWidth) { selectedNumber ->
-            Log.d("Selected Number", selectedNumber)
-            if (selectedNumber == "⌫") {
-                if (quantity.text.isNotEmpty()) {
-                    val newText = quantity.text.dropLast(1)
-                    quantity = TextFieldValue(newText, selection = TextRange(newText.length)) // Cursor at end
-                    updateQuantity(newText)
-                }
-            }else if (selectedNumber == "✔"){
-                onClick.invoke()
-            }
-            else {
-                val newText = quantity.text + selectedNumber
-                quantity = TextFieldValue(newText, selection = TextRange(newText.length)) // Cursor at end
-                updateQuantity(newText)
-            }
-        }
+
     }
 }
 
