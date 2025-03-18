@@ -1,50 +1,55 @@
 package org.project.we3.ui.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.project.we3.R
 import org.project.we3.app.Camera
 import org.project.we3.app.db.CameraViewModel
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
 fun SurveillanceCalculatorScreen(
     cameraList: List<Camera>,
@@ -135,26 +140,13 @@ fun SurveillanceCalculatorScreen(
                         surveillanceCalculatorViewModel.updateQuantity(it)
                     }
                     if (surveillanceCalculatorViewModel.quotation.camera.isNotEmpty()) {
-                        Column (modifier = Modifier.fillMaxWidth(1f)
-                            .heightIn(max = 120.dp)
-                            .verticalScroll(rememberScrollState()),
-                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
-                            Spacing()
-                            surveillanceCalculatorViewModel.quotation.camera.forEachIndexed { index, camera ->
-                                QuotationComponent(
-                                    camera.name,
-                                    surveillanceCalculatorViewModel.quotation.quantity[index]
-                                ) {
-                                    surveillanceCalculatorViewModel.removeCamera(index)
-                                }
-                            }
-                            Spacing()
-                        }
+                        QuotationColumnWithScrollbar(surveillanceCalculatorViewModel)
+                        Spacing(5.dp)
                     }
                     OutlinedButton(onClick = {
                         surveillanceCalculatorViewModel.addNewCameraButtonClicked(context)
-                    }, modifier = Modifier.fillMaxWidth(0.8f)) {
-                        Text("Add more cameras", fontSize = 18.sp)
+                    }, modifier = Modifier.fillMaxWidth(0.8f), border = BorderStroke(1.dp, Color.White)) {
+                        Text("Add more cameras", fontSize = 18.sp, color = Color(0xFFFFF1F1))
                     }
                     Button(onClick = {
                         surveillanceCalculatorViewModel.continueButtonClicked(context)
@@ -170,18 +162,64 @@ fun SurveillanceCalculatorScreen(
     }
 }
 
+
+
+@Composable
+fun QuotationColumnWithScrollbar(
+    surveillanceCalculatorViewModel: SurveillanceCalculatorViewModel
+) {
+    Row(Modifier.fillMaxWidth(0.75f).heightIn(min = 0.dp,max = 120.dp)) {
+        val scrollState = rememberScrollState()
+        var sliderPosition by remember { mutableFloatStateOf(0f) }
+        val coroutineScope = rememberCoroutineScope() // Get a coroutine scope
+
+        Column(
+            modifier = Modifier
+
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacing()
+            surveillanceCalculatorViewModel.quotation.camera.forEachIndexed { index, camera ->
+                QuotationComponent(
+                    camera.name,
+                    surveillanceCalculatorViewModel.quotation.quantity[index]
+                ) {
+                    surveillanceCalculatorViewModel.removeCamera(index)
+                }
+            }
+            Spacing()
+        }
+
+        Column(Modifier.width(20.dp).padding(start = 4.dp)) {
+            Slider(
+                value = sliderPosition,
+                onValueChange = {
+                    sliderPosition = it
+                    coroutineScope.launch { // Launch a coroutine
+                        scrollState.scrollTo((scrollState.maxValue * it).toInt())
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(vertical = 8.dp)
+            )
+        }
+    }
+}
 @Composable
 fun QuotationComponent(name: String, quantity: Int, onRemove: () -> Unit) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 25.dp, end=25.dp),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("$name... ($quantity)", color = Color.White, fontSize = 16.sp, modifier = Modifier.weight(1f))
         IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red)
+            Icon(painter = painterResource(R.drawable.trash_icon), contentDescription = "Remove", tint = Color.LightGray
+            )
         }
     }
 }

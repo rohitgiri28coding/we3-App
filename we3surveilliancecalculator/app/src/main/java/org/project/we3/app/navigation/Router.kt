@@ -3,6 +3,7 @@ package org.project.we3.app.navigation
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import org.project.we3.app.Camera
+import org.project.we3.app.Earning
 import org.project.we3.app.db.Quotation
 
 sealed class Screen {
@@ -16,7 +17,11 @@ sealed class Screen {
     data class CustomerDetailScreen(val quotation: Quotation): Screen()
     data class QuotationDetailScreen(val quotation: Quotation): Screen()
     data class QuotationEditScreen(val quotation: Quotation): Screen()
-    data class ActiveQuotationListScreen(val quotations: List<Quotation>): Screen()
+    data object ActiveQuotationListScreen: Screen()
+    data object AdminSectionNavigatorScreen: Screen()
+    data object EarningSectionScreen: Screen()
+    data object FulfilledQuotationListScreen: Screen()
+    data class EarningDetailScreen(val earning: Earning): Screen()
 }
 
 

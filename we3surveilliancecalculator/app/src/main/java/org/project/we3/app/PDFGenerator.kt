@@ -1,172 +1,25 @@
 package org.project.we3.app
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
-import android.os.Build
 import android.os.Environment
-import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import org.project.we3.app.db.Quotation
-import org.project.we3.ui.theme.AppTypography
-import java.io.IOException
+import java.io.File
+import java.io.FileOutputStream
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
-@RequiresApi(Build.VERSION_CODES.Q)
-fun createQuotationPDF(context: Context, quotation: Quotation) {
-
-    val cameraList: List<Camera> = quotation.camera
-    val quantityList: List<Int> = quotation.quantity
-    val quantity = quantityList[0]
-
-    val pdfDocument = PdfDocument()
-    val paint = Paint()
-    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
-    val page = pdfDocument.startPage(pageInfo)
-    val canvas = page.canvas
-    val margin = 20f
-    var currentY = 60f
-    var totalAmount = 0.0
-
-    // Use custom fonts from the provided Typography
-    val brandingTypeface = Typeface.create(AppTypography.displayLarge.fontFamily?.toString(), Typeface.NORMAL)
-    val bodyTypeface = Typeface.create(AppTypography.bodyLarge.fontFamily?.toString(), Typeface.NORMAL)
-
-    // Branding Header
-    paint.typeface = brandingTypeface
-    paint.textSize = 22f
-    paint.isFakeBoldText = true
-    paint.textAlign = Paint.Align.CENTER
-    canvas.drawText("We3 Surveillance Camera Store", 297.5f, currentY, paint) // Centered on A4 width (595/2)
-    currentY += 25f
-
-    paint.textSize = 15f
-    paint.isFakeBoldText = false
-    canvas.drawText("Bakerganj, Patna", 297.5f, currentY, paint)
-    currentY += 20f
-
-    canvas.drawText("Phone No.: 9386673993", 297.5f, currentY, paint)
-    currentY += 25f
-
-    // Draw a separator line
-    paint.strokeWidth = 1f
-    canvas.drawLine(margin, currentY, 575f, currentY, paint)
-    currentY += 30f // Adjusted spacing after separator
-
-    // Section Title
-    paint.typeface = brandingTypeface
-    paint.textSize = 17f
-    paint.isFakeBoldText = true
-    paint.textAlign = Paint.Align.LEFT
-    canvas.drawText("Quotation Details", 250f, currentY, paint)
-    currentY += 40f
-    paint.textAlign = Paint.Align.LEFT
-
-    // Camera Details
-    paint.typeface = bodyTypeface
-    paint.textSize = 15f
-    paint.isFakeBoldText = false
-    cameraList.forEach { camera ->
-        val cameraDetails = "${camera.name}: ${camera.detail}"
-        val cameraLines = wrapTextToLines(text = cameraDetails, paint = paint)
-
-        for (line in cameraLines) {
-            canvas.drawText(line, margin, currentY, paint)
-            currentY += 18f
-        }
-        currentY += 10f // Spacing after each camera
-    }
-
-    currentY += 20f // Adjusted spacing before table
-    // Table Header
-    paint.typeface = brandingTypeface
-    paint.textSize = 15f
-    paint.isFakeBoldText = true
-    val headers = listOf("Unit Price", "Quantity", "Amount (GST Excluded)", "Tax Rate", "Total Tax")
-    var columnWidths = listOf(100f, 80f, 170f, 100f, 120f)
-
-    var currentX = margin
-    for ((index, header) in headers.withIndex()) {
-        canvas.drawText(header, currentX, currentY, paint)
-        currentX += columnWidths[index]
-    }
-    currentY += 25f // Increased spacing between header and rows
-    canvas.drawLine(margin, currentY - 10f, 575f, currentY - 10f, paint) // Line below header
-    currentY += 10f
-    // Table Rows
-    paint.typeface = bodyTypeface
-    paint.textSize = 12f
-    paint.isFakeBoldText = false
-    columnWidths = listOf(120f, 100f, 130f, 100f, 40f)
-    cameraList.forEach { camera ->
-        totalAmount = camera.gst * quantity * camera.unitPrice / 100 + quantity * camera.unitPrice
-
-        val rowData = listOf(
-            "₹${formatNumber(camera.unitPrice)}",
-            "$quantity",
-            "₹${formatNumber(quantity * camera.unitPrice)}",
-            "${camera.gst}%",
-            "₹${formatNumber(camera.gst * quantity * camera.unitPrice / 100)}"
-        )
-
-        currentX = margin+10f
-        for ((index, cellData) in rowData.withIndex()) {
-            canvas.drawText(cellData, currentX, currentY, paint)
-            currentX += columnWidths[index]
-        }
-        currentY += 25f // Increased row spacing
-    }
-    currentY += 20f // Adjusted spacing before footer
-    // Footer Totals
-    paint.typeface = brandingTypeface
-    paint.isFakeBoldText = true
-    paint.textSize = 19f
-    canvas.drawText("TOTAL:", 390f, currentY, paint)
-    canvas.drawText("₹${formatNumber(totalAmount)}", 460f, currentY, paint)
-    currentY += 40f // Adjusted spacing before amount in words
-
-    // Amount in Words
-    paint.textSize = 17f
-    canvas.drawText("Amount in Words: ", margin, currentY, paint)
-    paint.isFakeBoldText = false
-    canvas.drawText(convertNumberToWords(totalAmount), margin + 140f, currentY, paint) // Aligned amount in words
-    currentY += 30f
-
-    pdfDocument.finishPage(page)
-
-    // Save PDF to Downloads
-    val resolver = context.contentResolver
-    val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, "Quotation_${cameraList[0].name}.pdf")
-        put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-    }
-    try {
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-        uri?.let {
-            resolver.openOutputStream(it)?.use { outputStream ->
-                pdfDocument.writeTo(outputStream)
-                Toast.makeText(context, "PDF saved to Downloads", Toast.LENGTH_LONG).show()
-                val openIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/pdf")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                context.startActivity(openIntent)
-            }
-        } ?: throw IOException("Failed to create new MediaStore record.")
-    } catch (e: IOException) {
-        e.printStackTrace()
-        Toast.makeText(context, "Error saving PDF: ${e.message}", Toast.LENGTH_LONG).show()
-    } finally {
-        pdfDocument.close()
-    }
-}
-private fun formatNumber(number: Double): String {
+fun formatNumberIntoIndianNumber(number: Double): String {
     return NumberFormat.getInstance(Locale("en", "IN")).format(number)
 }
 
@@ -261,5 +114,242 @@ fun numberToWords(num: Long): String {
     }
 
     return word.toString().trim()
+}
+
+fun createQuotationPDF(context: Context, quotation: Quotation) {
+    try {
+        val pdfDocument = PdfDocument()
+        val paint = Paint()
+
+        val pageWidth = 595
+        val pageHeight = 842
+        val margin = 20f
+        val maxContentHeight = pageHeight - 100f  // Leave space for footer
+
+        val boldTypeface = Typeface.create("Arial", Typeface.BOLD)
+        val regularTypeface = Typeface.create("Arial", Typeface.NORMAL)
+        val blueColor = "#007AA5".toColorInt()
+        val redColor = "#B93540".toColorInt()
+        paint.textSize = 14f
+        var currentY = 60f
+        var totalAmount = 0.0
+        var pageIndex = 1
+
+        fun createNewPage(): PdfDocument.Page {
+            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageIndex).create()
+            val page = pdfDocument.startPage(pageInfo)
+            pageIndex++
+            return page
+        }
+
+        var page = createNewPage()
+        val canvas = page.canvas
+
+        fun drawHeader() {
+            val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+            paint.typeface = boldTypeface
+            paint.color = redColor
+            paint.textSize = 22f
+            paint.textAlign = Paint.Align.CENTER
+            canvas.drawText("We3 Surveillance Camera Store", pageWidth / 2f, currentY, paint)
+            currentY += 25f
+            paint.color = blueColor
+
+            paint.textSize = 15f
+            canvas.drawText("Bakerganj, Patna", pageWidth / 2f, currentY, paint)
+            currentY += 20f
+            canvas.drawText("Phone No.: 9386673993", pageWidth / 2f, currentY, paint)
+            currentY += 25f
+
+            paint.color = Color.BLACK
+            canvas.drawLine(margin, currentY, pageWidth - margin, currentY, paint)
+            currentY += 25f
+            canvas.drawText("PDF Generated On: $date", pageWidth - 140f, currentY, paint)
+            currentY += 30f
+        }
+
+        fun drawCustomerDetails() {
+            paint.typeface = boldTypeface
+            paint.color = blueColor
+            paint.textSize = 17f
+            paint.textAlign = Paint.Align.LEFT
+            canvas.drawText("Customer Details", margin, currentY, paint)
+            currentY += 20f
+
+            paint.typeface = regularTypeface
+            paint.color = Color.BLACK
+            paint.textSize = 14f
+
+            val customerDetails = "Name: ${quotation.customerName}"
+            val dateDetails = "Quotation Date: ${quotation.dateGenerated}"
+            canvas.drawText(customerDetails, margin, currentY, paint)
+            canvas.drawText(dateDetails, 376f, currentY, paint)
+            currentY += 18f
+
+            val phoneNumber = "Phone: ${quotation.phoneNumber}"
+            val validTill = "Valid Till: ${quotation.expiryDate}"
+            canvas.drawText(phoneNumber, margin, currentY, paint)
+            canvas.drawText(validTill, 420f, currentY, paint)
+            currentY += 20f
+
+            canvas.drawLine(margin, currentY, pageWidth - margin, currentY, paint)
+            currentY += 25f
+        }
+
+        fun drawTableHeader() {
+            paint.typeface = boldTypeface
+            paint.color = blueColor
+            paint.textSize = 15f
+
+            val headers = listOf("No.", "Camera Name", "Unit Price", "Qty", "Amount", "Tax", "Total Tax")
+            val columnWidths = listOf(30f, 140f, 90f, 50f, 100f, 50f, 100f)
+            var currentX = margin
+
+            for ((index, header) in headers.withIndex()) {
+                canvas.drawText(header, currentX, currentY, paint)
+                currentX += columnWidths[index]
+            }
+            currentY += 25f
+            paint.color = Color.BLACK
+            canvas.drawLine(margin, currentY - 10f, pageWidth - margin, currentY - 10f, paint)
+            currentY += 10f
+        }
+
+        drawHeader()
+        drawCustomerDetails()
+        drawTableHeader()
+
+        paint.typeface = regularTypeface
+        paint.textSize = 14f
+        paint.color = Color.BLACK
+
+        quotation.camera.forEachIndexed { index, camera ->
+            if (currentY + 50f > maxContentHeight) {
+                pdfDocument.finishPage(page)
+                page = createNewPage()
+                canvas.drawText("Continued...", margin, 40f, paint)
+                currentY = 60f
+                drawHeader()
+                drawTableHeader()
+            }
+
+            val quantity = quotation.quantity[index]
+            val amount = quantity * camera.unitPrice
+            val tax = (camera.gst * amount) / 100
+            totalAmount += amount + tax
+
+            val rowData = listOf(
+                "${index + 1})",
+                camera.name,
+                "₹${formatNumberIntoIndianNumber(camera.unitPrice)}",
+                "$quantity",
+                "₹${formatNumberIntoIndianNumber(amount)}",
+                "${camera.gst}%",
+                "₹${formatNumberIntoIndianNumber(tax)}"
+            )
+
+            val columnWidths = listOf(30f, 140f, 90f, 50f, 100f, 70f, 100f)
+            var currentX = margin
+            for ((colIndex, cellData) in rowData.withIndex()) {
+                if (colIndex == 1) {
+                    currentX += columnWidths[colIndex]
+                    continue // Skip direct text drawing for camera name
+                }
+                canvas.drawText(cellData, currentX, currentY, paint)
+                currentX += columnWidths[colIndex]
+            }
+
+            // Draw Camera Name as multi-line
+            val cameraNameX = margin + columnWidths[0]
+            var cameraNameY = currentY
+
+            val wrappedName = wrapTextToLines(
+                text = camera.name,
+                width = columnWidths[1].toInt() - 10,
+                paint = paint
+            ) // Wrap text
+
+            val rowHeight = (wrappedName.size * 22f).coerceAtLeast(25f) // Dynamic row height based on text lines
+
+            for (line in wrappedName) {
+                canvas.drawText(line, cameraNameX, cameraNameY, paint)
+                cameraNameY += 18f // Line spacing
+            }
+
+            currentY += rowHeight // Move to the next row
+
+        }
+
+        fun drawFooter() {
+            paint.textSize = 16f
+            if (currentY + 100f > maxContentHeight) {
+                pdfDocument.finishPage(page)
+                page = createNewPage()
+                currentY = 60f
+                drawHeader()
+            }
+            currentY += 20f
+
+            paint.typeface = boldTypeface
+            paint.color = blueColor
+            canvas.drawText("TOTAL:", 430f, currentY, paint)
+            canvas.drawText("₹${formatNumberIntoIndianNumber(totalAmount)}", 490f, currentY, paint)
+            currentY += 40f
+
+            paint.typeface = regularTypeface
+            paint.color = Color.BLACK
+
+            if (quotation.extraDiscount) {
+                canvas.drawText("Discount: ₹${formatNumberIntoIndianNumber(quotation.discountAmount)}", margin, currentY, paint)
+                currentY += 30f
+            }
+            if (quotation.prepaymentAmount != 0.0) {
+                canvas.drawText("Advance: ₹${formatNumberIntoIndianNumber(quotation.prepaymentAmount)}", margin, currentY, paint)
+                currentY += 30f
+                totalAmount -= quotation.discountAmount
+            }
+
+            paint.textSize = 17f
+            canvas.drawText("Total Amount: ₹${formatNumberIntoIndianNumber(totalAmount)}", margin, currentY, paint)
+            currentY += 30f
+
+            paint.textSize = 19f
+            paint.typeface = boldTypeface
+            paint.color = redColor
+            totalAmount -= quotation.prepaymentAmount
+            canvas.drawText("Amount to be Paid: ₹${formatNumberIntoIndianNumber(totalAmount)}", margin, currentY, paint)
+            currentY += 30f
+
+            paint.textSize = 17f
+            paint.color = Color.BLACK
+            canvas.drawText("Amount in Words: ${convertNumberToWords(totalAmount)}", margin, currentY, paint)
+        }
+
+        drawFooter()
+        pdfDocument.finishPage(page)
+
+        val directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
+        val file = File(directoryPath, "${quotation.id} invoice.pdf")
+
+        FileOutputStream(file).use { fos -> pdfDocument.writeTo(fos) }
+        openPdfFile(context, file)
+        pdfDocument.close()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.d("Exception", e.toString())
+    }
+}
+
+
+fun openPdfFile(context: Context, file: File) {
+    if (!file.exists()) {
+        Toast.makeText(context, "PDF file not found", Toast.LENGTH_SHORT).show()
+        return
+    }
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    val intent = Intent(Intent.ACTION_VIEW)
+    intent.setDataAndType(uri, "application/pdf")
+    intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NO_HISTORY
+    context.startActivity(intent)
 }
 

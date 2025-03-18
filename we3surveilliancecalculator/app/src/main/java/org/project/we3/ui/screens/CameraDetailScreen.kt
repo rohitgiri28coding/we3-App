@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -101,26 +100,17 @@ fun CameraDetailsScreen(
         }
     }
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this camera? This action cannot be undone.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDialog = false
-                        cameraDetailsViewModel.isLoading = true
-                        cameraDetailsViewModel.deleteCamera(camera, context, cameraViewModel)
-                    },
-                    colors = ButtonDefaults.buttonColors(Color.Red)
-                ) {
-                    Text("Delete")
-                }
+        CustomAlertDialogBox(
+            title = "Confirm Deletion",
+            message = "Are you sure you want to delete this camera? This action cannot be undone.",
+            confirmButtonText = "Delete",
+            confirmButtonClicked = {
+                showDialog = false
+                cameraDetailsViewModel.isLoading = true
+                cameraDetailsViewModel.deleteCamera(camera, context, cameraViewModel)
             },
-            dismissButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Cancel")
-                }
+            onDismiss = {
+                showDialog = false
             }
         )
     }

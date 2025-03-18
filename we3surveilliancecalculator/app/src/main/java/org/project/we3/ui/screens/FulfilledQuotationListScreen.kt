@@ -25,21 +25,21 @@ import org.project.we3.app.navigation.Screen
 import org.project.we3.app.navigation.SystemBackButtonHandler
 
 @Composable
-fun ActiveQuotationListScreen(innerPadding: PaddingValues, activeQuotationsViewModel: ActiveQuotationsViewModel = viewModel ()){
+fun FulfilledQuotationListScreen(innerPadding: PaddingValues, fulfilledQuotationViewModel: FulfilledQuotationViewModel = viewModel()) {
     LaunchedEffect(Unit) {
-        activeQuotationsViewModel.fetchActiveQuotations()
+        fulfilledQuotationViewModel.fetchFulfilledQuotations()
     }
-    val quotations = activeQuotationsViewModel.activeQuotations.collectAsState(emptyList()).value
+    val quotations = fulfilledQuotationViewModel.fulfilledQuotations.collectAsState(emptyList()).value
     LazyColumn (modifier = Modifier.padding(innerPadding)){
         item {
             Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
-                Text("Active Quotations", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
-                IconButton(onClick = {activeQuotationsViewModel.fetchActiveQuotations()}) {
+                Text("Fulfilled Quotations", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+                IconButton(onClick = {fulfilledQuotationViewModel.fetchFulfilledQuotations()}) {
                     Icon(painter = painterResource(R.drawable.refresh_icon), contentDescription = "Refresh")
                 }
             }
         }
-        items (quotations){ quotation->
+        items (quotations){quotation->
             QuotationListComponent("${quotation.customerName} - ${quotation.dateGenerated}"){
                 Router.navigateTo(Screen.QuotationDetailScreen(quotation))
             }
@@ -49,4 +49,3 @@ fun ActiveQuotationListScreen(innerPadding: PaddingValues, activeQuotationsViewM
         Router.navigateTo(Screen.AdminSectionNavigatorScreen)
     }
 }
-

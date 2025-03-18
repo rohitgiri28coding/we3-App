@@ -1,10 +1,8 @@
 package org.project.we3.ui.screens
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +17,7 @@ class SurveillanceCalculatorViewModel: ViewModel() {
     var selectedCamera by mutableStateOf<Camera?>(null)
     var quantity by mutableStateOf("")
 
-    var quotation by mutableStateOf(Quotation(emptyList<Camera>(), emptyList()))
+    var quotation by mutableStateOf(Quotation(camera = emptyList<Camera>(), quantity = emptyList()))
 
     fun selectCamera(camera: Camera) {
         selectedCamera = camera
@@ -30,46 +28,50 @@ class SurveillanceCalculatorViewModel: ViewModel() {
         quantity = newQuantity
         Log.d("Check",quantity)
     }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun validateQuotation(context: Context): Boolean {
-        val selectedCam = selectedCamera
-        var qty = quantity.toIntOrNull()
-
-        when {
-            selectedCam == null -> {
-                Toast.makeText(context, "Please select a camera", Toast.LENGTH_SHORT).show()
-            }
-            qty == null || qty <= 0 -> {
-                Toast.makeText(context, "Enter a valid quantity", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                if (qty > selectedCam.quantity) {
-                    Toast.makeText(
-                        context,
-                        "Only ${selectedCam.quantity} cameras available",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    qty = selectedCam.quantity
-                    quantity = qty.toString()
-                }
-                return true
-            }
-
-        }
-        return false
-    }
-    @RequiresApi(Build.VERSION_CODES.Q)
     fun addNewCameraButtonClicked(context: Context) {
         selectedCamera?.let { camera ->
-            val quantityInt = quantity.toIntOrNull()
+            var quantityInt = quantity.toIntOrNull()
             if (quantityInt != null) {
-                quotation = quotation.copy(
-                    camera = quotation.camera.toMutableList().apply { add(camera) },
-                    quantity = quotation.quantity.toMutableList().apply { add(quantityInt) }
-                )
-                selectedCamera= null
-                quantity=""
+                val existingIndex = quotation.camera.indexOfFirst { it.name == camera.name }
+
+                if (existingIndex != -1) {
+                    // Camera already exists, update quantity
+                    val currentQuantity = quotation.quantity[existingIndex]
+                    val maxQuantity = camera.quantity
+
+                    if (currentQuantity + quantityInt > maxQuantity) {
+                        Toast.makeText(context, "Maximum available quantity for ${camera.name} is ${maxQuantity}.", Toast.LENGTH_SHORT).show()
+                        quantityInt = maxQuantity - currentQuantity
+                        if(quantityInt < 1){
+                            Toast.makeText(context, "No more ${camera.name} cameras can be added", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        quantity = quantityInt.toString()
+                    }
+
+                    val updatedQuantity = currentQuantity + quantityInt
+                    val updatedCameraList = quotation.camera.toMutableList()
+                    val updatedQuantityList = quotation.quantity.toMutableList()
+
+                    updatedQuantityList[existingIndex] = updatedQuantity
+                    quotation = quotation.copy(camera = updatedCameraList, quantity = updatedQuantityList)
+
+                } else {
+                    // Camera is new, add it
+                    if (quantityInt > camera.quantity){
+                        Toast.makeText(context, "Maximum available quantity for ${camera.name} is ${camera.quantity}.", Toast.LENGTH_SHORT).show()
+                        quantityInt = camera.quantity
+                        quantity = quantityInt.toString()
+                    }
+
+                    quotation = quotation.copy(
+                        camera = quotation.camera.toMutableList().apply { add(camera) },
+                        quantity = quotation.quantity.toMutableList().apply { add(quantityInt) }
+                    )
+                }
+
+                selectedCamera = null
+                quantity = ""
             } else {
                 Toast.makeText(context, "Invalid quantity", Toast.LENGTH_SHORT).show()
             }
@@ -77,12 +79,20 @@ class SurveillanceCalculatorViewModel: ViewModel() {
             Toast.makeText(context, "Select a camera", Toast.LENGTH_SHORT).show()
         }
     }
-    @RequiresApi(Build.VERSION_CODES.Q)
+
     fun continueButtonClicked(context: Context) {
-        if (validateQuotation(context)) {
+        selectedCamera?.let {
+            if (quantity.isNotEmpty()) {
+                addNewCameraButtonClicked(context)
+            }
+        }
+        if(quotation.camera.isNotEmpty()) {
             Router.navigateTo(Screen.CustomerDetailScreen(quotation))
+        }else{
+            Toast.makeText(context, "Please add at least one camera", Toast.LENGTH_SHORT).show()
         }
     }
+
     fun removeCamera(index: Int){
         if (index >= 0 && index < quotation.camera.size) {
             quotation = quotation.copy(

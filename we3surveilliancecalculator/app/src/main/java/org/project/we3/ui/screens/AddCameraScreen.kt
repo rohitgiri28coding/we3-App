@@ -16,15 +16,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,13 +31,6 @@ import org.project.we3.app.db.CameraViewModel
 @Composable
 fun AddCameraScreen(innerPaddingValues: PaddingValues, cameraViewModel: CameraViewModel, addCameraViewModel: AddCameraViewModel = viewModel()) {
     val context = LocalContext.current
-
-    var cameraName by remember { mutableStateOf("") }
-    var cameraDetails by remember { mutableStateOf("") }
-    var mrp by remember { mutableStateOf("") }
-    var unitPrice by remember { mutableStateOf("") }
-    var gstRate by remember { mutableStateOf("18.0") }
-    var quantity by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -62,17 +52,29 @@ fun AddCameraScreen(innerPaddingValues: PaddingValues, cameraViewModel: CameraVi
             Text("Add New Camera", fontSize = 24.sp, color = Color.Black, modifier = Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(20.dp))
 
-            cameraName = cameraEditSection("Camera Name", cameraName, KeyboardType.Text)
+            CardEditSection("Camera Name", addCameraViewModel.cameraName, KeyboardType.Text){
+                addCameraViewModel.updateCameraName(it)
+            }
             Spacing()
-            cameraDetails = cameraEditSection("Camera Details", cameraDetails, KeyboardType.Text)
+            CardEditSection("Camera Details", addCameraViewModel.cameraDetails, KeyboardType.Text){
+                addCameraViewModel.updateCameraDetails(it)
+            }
             Spacing()
-            mrp = cameraEditSection("MRP", mrp)
+            CardEditSection("MRP", addCameraViewModel.mrp){
+                addCameraViewModel.updateMRP(it)
+            }
             Spacing()
-            unitPrice = cameraEditSection("Unit Price (Without GST)", unitPrice)
+            CardEditSection("Unit Price (Without GST)", addCameraViewModel.unitPrice){
+                addCameraViewModel.updateUnitPrice(it)
+            }
             Spacing()
-            gstRate = cameraEditSection("GST Rate (%)", gstRate)
+            CardEditSection("GST Rate (%)", addCameraViewModel.gstRate){
+                addCameraViewModel.updateGSTRate(it)
+            }
             Spacing()
-            quantity = cameraEditSection("Quantity (Stock)", quantity)
+            CardEditSection("Quantity (Stock)", addCameraViewModel.quantity, imeAction = ImeAction.Done){
+                addCameraViewModel.updateQuantity(it)
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
             if (addCameraViewModel.isLoading) {
@@ -82,13 +84,7 @@ fun AddCameraScreen(innerPaddingValues: PaddingValues, cameraViewModel: CameraVi
                     onClick = {
                         addCameraViewModel.checkDataAndUpload(
                             context,
-                            cameraViewModel,
-                            cameraName,
-                            cameraDetails,
-                            mrp,
-                            unitPrice,
-                            gstRate,
-                            quantity
+                            cameraViewModel
                         )
                     },
                     modifier = Modifier

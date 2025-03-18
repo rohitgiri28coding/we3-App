@@ -20,33 +20,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.project.we3.R
+import org.project.we3.app.formatNumberIntoIndianNumber
 import org.project.we3.app.navigation.Router
 import org.project.we3.app.navigation.Screen
-import org.project.we3.app.navigation.SystemBackButtonHandler
 
 @Composable
-fun ActiveQuotationListScreen(innerPadding: PaddingValues, activeQuotationsViewModel: ActiveQuotationsViewModel = viewModel ()){
+fun EarningSectionScreen(innerPadding: PaddingValues, earningSectionViewModel: EarningSectionViewModel= viewModel()) {
     LaunchedEffect(Unit) {
-        activeQuotationsViewModel.fetchActiveQuotations()
+        earningSectionViewModel.fetchEarningList()
     }
-    val quotations = activeQuotationsViewModel.activeQuotations.collectAsState(emptyList()).value
+    val earningList = earningSectionViewModel.earningList.collectAsState(emptyList()).value
     LazyColumn (modifier = Modifier.padding(innerPadding)){
         item {
             Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
-                Text("Active Quotations", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
-                IconButton(onClick = {activeQuotationsViewModel.fetchActiveQuotations()}) {
+                Text("Earning Summary", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+                IconButton(onClick = {earningSectionViewModel.fetchEarningList()}) {
                     Icon(painter = painterResource(R.drawable.refresh_icon), contentDescription = "Refresh")
                 }
             }
         }
-        items (quotations){ quotation->
-            QuotationListComponent("${quotation.customerName} - ${quotation.dateGenerated}"){
-                Router.navigateTo(Screen.QuotationDetailScreen(quotation))
+        item {
+            QuotationListComponent("Total Earning: ₹${formatNumberIntoIndianNumber(earningList.sumOf { it.totalEarning })}"){}
+        }
+        items (earningList){ earning->
+            QuotationListComponent("+ ₹${formatNumberIntoIndianNumber(earning.totalEarning)}"){
+                Router.navigateTo(Screen.EarningDetailScreen(earning))
             }
         }
     }
-    SystemBackButtonHandler {
-        Router.navigateTo(Screen.AdminSectionNavigatorScreen)
-    }
 }
-

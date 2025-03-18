@@ -11,11 +11,7 @@ import org.project.we3.app.navigation.Screen
 class ViewAllCameraViewModel: ViewModel() {
     var isLoading by  mutableStateOf(false)
 
-    fun selectCameraAndNavigate(camera: Camera) {
+    fun navigateToCameraDetailScreen(camera: Camera) {
         Router.navigateTo(Screen.CameraDetailScreen(camera))
-    }
-
-    fun navigateToAddCameraScreen() {
-        Router.navigateTo(Screen.AddNewCameraScreen)
     }
 }

@@ -1,8 +1,6 @@
 package org.project.we3.ui.screens
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -60,26 +62,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.project.we3.R
 import org.project.we3.app.Camera
-import java.time.LocalDate
+import java.time.Instant
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
+import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateRangePickerModal(
-    onDateRangeSelected: (Pair<Long?, Long?>) -> Unit,
+    startDate: Long?,
+    endDate: Long?,
+    onDateRangeSelected: (Pair<String?, String?>) -> Unit, // Changed to String?
     onDismiss: () -> Unit
 ) {
-    val currentDate = LocalDate.now()
-    val thirtyDaysLater = currentDate.plus(30, ChronoUnit.DAYS)
-
-    val currentMillis = currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val thirtyDaysLaterMillis = thirtyDaysLater.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
     val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = currentMillis,
-        initialSelectedEndDateMillis = thirtyDaysLaterMillis
+        initialSelectedStartDateMillis = startDate,
+        initialSelectedEndDateMillis = endDate
     )
 
     DatePickerDialog(
@@ -87,10 +85,26 @@ fun DateRangePickerModal(
         confirmButton = {
             TextButton(
                 onClick = {
+                    val startDateMillis = dateRangePickerState.selectedStartDateMillis
+                    val endDateMillis = dateRangePickerState.selectedEndDateMillis
+
+                    val startDateString = startDateMillis?.let {
+                        Instant.ofEpochMilli(it)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                    }
+
+                    val endDateString = endDateMillis?.let {
+                        Instant.ofEpochMilli(it)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                    }
                     onDateRangeSelected(
                         Pair(
-                            dateRangePickerState.selectedStartDateMillis,
-                            dateRangePickerState.selectedEndDateMillis
+                            startDateString,
+                            endDateString
                         )
                     )
                     onDismiss()
@@ -109,17 +123,60 @@ fun DateRangePickerModal(
             state = dateRangePickerState,
             title = {
                 Text(
-                    text = "Select date range"
+                    text = "Select Quotation expiryDate range",
+                    fontSize = 14.sp
                 )
             },
             showModeToggle = false,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
-                .padding(16.dp)
+                .padding(top = 10.dp, bottom = 10.dp, start = 8.dp, end = 5.dp)
         )
     }
 }
+
+@Composable
+fun CustomAlertDialogBox(title: String, message: String, confirmButtonText: String, confirmButtonClicked: (Boolean)-> Unit, onDismiss: (Boolean) -> Unit){
+    AlertDialog(
+        onDismissRequest = { onDismiss(false) },
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(
+                onClick = {
+                    confirmButtonClicked(false)
+                },
+                colors = ButtonDefaults.buttonColors(Color.Red)
+            ) {
+                Text(confirmButtonText)
+            }
+        },
+        dismissButton = {
+            Button(onClick = {onDismiss(false)}) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+
+@Composable
+fun QuotationListComponent(data: String, onClick: () -> Unit){
+    Column(modifier = Modifier.padding(10.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable{onClick.invoke()},
+            elevation = CardDefaults.cardElevation(4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            )
+        ) {
+            Text(text = data, modifier = Modifier.padding(16.dp), fontSize = 18.sp)
+        }
+        Spacing(5.dp)
+    }
+}
+
 @Composable
 fun CameraImage(screenWidth: Dp) {
 
@@ -161,8 +218,7 @@ fun CameraDropdownMenu(cameraList: List<Camera>, selectedCamera: Camera?, onCame
     var expanded by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier,
         contentAlignment = Alignment.Center
     ) {
         OutlinedTextField(
@@ -236,7 +292,8 @@ fun CheckComponent(text: String, checked: Boolean, updateCheckValue: (Boolean) -
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text
+            text,
+            color = Color.White
         )
         Checkbox(
             checked = checked,
@@ -246,7 +303,7 @@ fun CheckComponent(text: String, checked: Boolean, updateCheckValue: (Boolean) -
 }
 
 @Composable
-fun InputField(text: String, txtValue: String, keyboardType: KeyboardType= KeyboardType.Number, updateText: (String)-> Unit){
+fun InputField(text: String, txtValue: String, keyboardType: KeyboardType= KeyboardType.Number, imeAction: ImeAction= ImeAction.Next, updateText: (String)-> Unit){
     Column (
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -270,7 +327,7 @@ fun InputField(text: String, txtValue: String, keyboardType: KeyboardType= Keybo
                 disabledPrefixColor = Color.White,
                 disabledContainerColor = Color.White
             ),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType, imeAction = imeAction),
             textStyle = TextStyle(color = Color.White)
         )
         Spacing(15.dp)
@@ -280,34 +337,33 @@ fun InputField(text: String, txtValue: String, keyboardType: KeyboardType= Keybo
 fun Spacing(size: Dp = 20.dp){
     Spacer(modifier = Modifier.size(size))
 }
-@Composable
-private fun editSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
-    var v1 by remember {  mutableStateOf(value)}
-    TextField(
-        value = v1,
-        onValueChange = { v1 = it },
-        label = { Text(textValue, color = Color.Black) },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
-        modifier = Modifier.fillMaxWidth(),
-        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedTextColor = Color.Black, unfocusedTextColor = Color.Black)
-    )
-    return v1
-}
 
 @Composable
-fun cameraEditSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number): String {
-    var v1 by remember { mutableStateOf(value)}
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White,
-            contentColor = Color.Black
-        )
-    ) {
-        v1 = editSection(textValue, v1, keyboardType)
+fun CardEditSection(textValue: String, value: String, keyboardType: KeyboardType = KeyboardType.Number, imeAction: ImeAction = ImeAction.Next, onTextChange: (String)-> Unit){
+    Column (modifier = Modifier.padding(5.dp)){
+        Text(textValue, color = Color.Black, fontSize = 17.sp, modifier = Modifier.padding(5.dp), fontWeight = FontWeight.Bold)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            )
+        ) {
+            TextField(
+                value = value,
+                onValueChange = { onTextChange(it) },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType, imeAction = imeAction),
+                modifier = Modifier.fillMaxSize(),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                )
+            )
+        }
     }
-    return v1
 }
 @Composable
 fun QuantityInputField(quantity: String, updateQuantity: (String) -> Unit) {

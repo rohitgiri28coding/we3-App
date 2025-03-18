@@ -16,17 +16,35 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditCameraViewModel @Inject constructor(private val firestoreDBRepository: FirestoreDBRepository): ViewModel() {
-    var isLoading by mutableStateOf(true)
+
+    var isLoading by mutableStateOf(false)
+
+    var cameraName by mutableStateOf("")
+        private set
+    var quantity by mutableStateOf("")
+        private set
+    var mrp by mutableStateOf("")
+        private set
+    var unitPrice by mutableStateOf("")
+        private set
+    var gstRate by mutableStateOf("")
+        private set
+    var cameraDetails by mutableStateOf("")
+        private set
+    var showDialog by mutableStateOf(false)
+
+    fun setCamera(camera: Camera) {
+        cameraName = camera.name
+        quantity = camera.quantity.toString()
+        mrp = camera.mrp.toString()
+        unitPrice = camera.unitPrice.toString()
+        gstRate = camera.gst.toString()
+    }
+
 
     fun checkDataAndUpdate(
         context: Context,
         id: String,
-        cameraName: String,
-        cameraDetails: String,
-        mrp: String,
-        unitPrice: String,
-        gstRate: String,
-        quantity: String,
         cameraViewModel: CameraViewModel
     ) {
         isLoading = true
@@ -41,13 +59,7 @@ class EditCameraViewModel @Inject constructor(private val firestoreDBRepository:
             updateCameraToFirestore(
                 context,
                 cameraViewModel,
-                id,
-                cameraName,
-                cameraDetails,
-                mrp,
-                unitPrice,
-                gstRate,
-                quantity
+                id
             )
         }
         isLoading = false
@@ -56,13 +68,7 @@ class EditCameraViewModel @Inject constructor(private val firestoreDBRepository:
     private fun updateCameraToFirestore(
         context: Context,
         cameraViewModel: CameraViewModel,
-        id: String,
-        cameraName: String,
-        cameraDetails: String,
-        mrp: String,
-        unitPrice: String,
-        gstRate: String,
-        quantity: String
+        id: String
     ) {
         val cameraData = Camera(
             name = cameraName,
@@ -75,6 +81,30 @@ class EditCameraViewModel @Inject constructor(private val firestoreDBRepository:
         viewModelScope.launch {
             firestoreDBRepository.updateCamera(cameraData, context, id, cameraViewModel)
         }
+    }
+
+    fun updateCameraName(name: String){
+        cameraName = name
+    }
+
+    fun updateCameraDetails(details: String){
+        cameraDetails = details
+    }
+
+    fun updateMRP(mrp: String){
+        this.mrp = mrp
+    }
+
+    fun updateUnitPrice(unitPrice: String){
+        this.unitPrice = unitPrice
+    }
+
+    fun updateGSTRate(gstRate: String){
+        this.gstRate = gstRate
+    }
+
+    fun updateQuantity(quantity: String){
+        this.quantity = quantity
     }
 
 }

@@ -18,20 +18,26 @@ import javax.inject.Inject
 class AddCameraViewModel @Inject constructor(private val firestoreDBRepository: FirestoreDBRepository): ViewModel() {
     var isLoading by mutableStateOf(false)
 
+    var cameraName by mutableStateOf("")
+        private set
+    var cameraDetails by mutableStateOf("")
+        private set
+    var mrp by mutableStateOf("")
+        private set
+    var unitPrice by mutableStateOf("")
+        private set
+    var gstRate by mutableStateOf("18.0")
+        private set
+    var quantity by mutableStateOf("")
+        private set
 
     private fun addCameraToFirestore(
         context: Context,
-        cameraViewModel: CameraViewModel,
-        name: String,
-        details: String,
-        mrp: String,
-        unitPrice: String,
-        gstRate: String,
-        quantity: String
+        cameraViewModel: CameraViewModel
     ) {
         val cameraData = Camera(
-            name = name,
-            detail = details,
+            name = cameraName,
+            detail = cameraDetails,
             mrp = mrp.toDouble(),
             unitPrice = unitPrice.toDouble(),
             gst = gstRate.toDouble(),
@@ -42,7 +48,7 @@ class AddCameraViewModel @Inject constructor(private val firestoreDBRepository: 
         }
     }
 
-    fun checkDataAndUpload(context: Context, cameraViewModel: CameraViewModel, cameraName: String, cameraDetails: String, mrp: String, unitPrice: String, gstRate: String, quantity: String) {
+    fun checkDataAndUpload(context: Context, cameraViewModel: CameraViewModel) {
         isLoading = true
         if(cameraName.isEmpty() || cameraDetails.isEmpty() || mrp.isEmpty() || unitPrice.isEmpty() || gstRate.isEmpty() || quantity.isEmpty()) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -53,9 +59,33 @@ class AddCameraViewModel @Inject constructor(private val firestoreDBRepository: 
                 isLoading = false
                 return
             }
-            addCameraToFirestore(context, cameraViewModel, cameraName, cameraDetails, mrp, unitPrice, gstRate, quantity)
+            addCameraToFirestore(context, cameraViewModel)
         }
         isLoading = false
+    }
+
+    fun updateCameraName(name: String){
+        cameraName = name
+    }
+
+    fun updateCameraDetails(details: String){
+        cameraDetails = details
+    }
+
+    fun updateMRP(mrp: String){
+        this.mrp = mrp
+    }
+
+    fun updateUnitPrice(unitPrice: String){
+        this.unitPrice = unitPrice
+    }
+
+    fun updateGSTRate(gstRate: String){
+        this.gstRate = gstRate
+    }
+
+    fun updateQuantity(quantity: String){
+        this.quantity = quantity
     }
 
 }

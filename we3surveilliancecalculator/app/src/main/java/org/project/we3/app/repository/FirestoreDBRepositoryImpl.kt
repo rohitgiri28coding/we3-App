@@ -19,7 +19,6 @@ class FirestoreDBRepositoryImpl(
             val snapshot = firestore.collection("CameraList").get().await()  // 🔥 Await the result
 
             cameras = snapshot.documents.map { document ->
-                Log.d("ViewAllCamera", "${document.id} => ${document.data}")
                 Camera(
                     firestoreId = document.id,  // 🔥 Store actual Firestore ID
                     name = document.getString("name") ?: "",
