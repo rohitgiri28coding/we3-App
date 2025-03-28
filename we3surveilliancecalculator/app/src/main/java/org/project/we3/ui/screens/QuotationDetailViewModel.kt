@@ -48,10 +48,20 @@ class QuotationDetailViewModel : ViewModel() {
     }
 
     fun deleteQuotation(quotation: Quotation) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             showLoader = true // Move this to the start
             try {
                 db.collection("quotations").document(quotation.firestoreId).delete().await()
+                val doc =
+                    db.collection("earnings").whereEqualTo("quotationId", quotation.firestoreId)
+                        .get()
+                        .await()
+
+                withContext(Dispatchers.Main) {
+                    doc.forEach {
+                        db.collection("earnings").document(it.id).delete().await()
+                    }
+                }
                 Router.navigateTo(Screen.AdminSectionNavigatorScreen)
             } catch (e: Exception) {
                 Log.e("QuotationDetailViewModel", "Error deleting quotation", e)
