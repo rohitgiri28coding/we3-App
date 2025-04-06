@@ -61,11 +61,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.project.we3.R
-import org.project.we3.app.Camera
+import org.project.we3.data.model.Camera
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -260,9 +259,7 @@ fun CameraDropdownMenu(cameraList: List<Camera>, selectedCamera: Camera?, onCame
             if (cameraList.isEmpty()){
                 Log.d("CameraDropdownMenu", "No Camera Found")
                 DropdownMenuItem(
-                    onClick = {
-
-                    },
+                    onClick = {},
                     text = { Text("No Camera Found.", color = Color.Black) }
                 )
             }else {

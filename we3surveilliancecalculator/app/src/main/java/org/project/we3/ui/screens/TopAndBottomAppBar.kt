@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import org.project.we3.app.navigation.AppScreenNavigation
-import org.project.we3.app.navigation.Router
-import org.project.we3.app.navigation.Screen
+import org.project.we3.ui.navigation.AppScreenNavigation
+import org.project.we3.ui.navigation.Router
+import org.project.we3.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

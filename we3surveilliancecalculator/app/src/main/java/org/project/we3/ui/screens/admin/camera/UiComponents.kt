@@ -1,0 +1,17 @@
+package org.project.we3.ui.screens.admin.camera
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import org.project.we3.data.model.Camera
+import org.project.we3.ui.navigation.Router
+import org.project.we3.ui.navigation.Screen
+
+class ViewAllCameraViewModel: ViewModel() {
+    var isLoading by mutableStateOf(false)
+
+    fun navigateToCameraDetailScreen(camera: Camera) {
+        Router.navigateTo(Screen.CameraDetailScreen(camera))
+    }
+}

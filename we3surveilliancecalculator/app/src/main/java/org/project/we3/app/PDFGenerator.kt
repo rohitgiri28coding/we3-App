@@ -10,7 +10,7 @@ import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import org.project.we3.app.db.Quotation
+import org.project.we3.data.model.Quotation
 import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat

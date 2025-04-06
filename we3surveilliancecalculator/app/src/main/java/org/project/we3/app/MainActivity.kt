@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.shopping.we3surveillancecalculator.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import org.project.we3.app.navigation.AppEntryPoint
+import org.project.we3.ui.navigation.AppEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
